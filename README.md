@@ -1,4 +1,4 @@
-# claude-skills (private)
+# skills (private)
 
 My personal Claude Code skills. This repo is cloned as `~/.claude/skills`, so every skill folder here is loaded by Claude Code in every session.
 
@@ -9,9 +9,9 @@ My personal Claude Code skills. This repo is cloned as `~/.claude/skills`, so ev
 ## Set up on a new machine
 
 ```bash
-git clone https://github.com/Jrkesari/claude-skills ~/.claude/skills   # into an empty ~/.claude/skills
+git clone https://github.com/Jrkesari/skills ~/.claude/skills   # into an empty ~/.claude/skills
 # or, when ~/.claude/skills already holds other skills:
-cd ~/.claude/skills && git init -b main && git remote add origin https://github.com/Jrkesari/claude-skills && git fetch origin && git checkout main
+cd ~/.claude/skills && git init -b main && git remote add origin https://github.com/Jrkesari/skills && git fetch origin && git checkout main
 ```
 
 ## Add a skill
