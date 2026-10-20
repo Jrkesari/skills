@@ -1,2 +1,8 @@
+# Only my own skills are tracked; skills other tools install (hyperframes, media-use, ...) stay local.
+/*
+!/.gitignore
+!/README.md
+!/netigen-video/
+!/netigen-video/**
 __pycache__/
 *.pyc
