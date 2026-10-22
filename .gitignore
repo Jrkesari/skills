@@ -6,3 +6,5 @@
 !/netigen-video/**
 __pycache__/
 *.pyc
+!/netigen-security-audit/
+!/netigen-security-audit/**
