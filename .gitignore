@@ -10,3 +10,5 @@ __pycache__/
 !/netigen-security-audit/**
 !/video-editor/
 !/video-editor/**
+__pycache__/
+*.pyc
