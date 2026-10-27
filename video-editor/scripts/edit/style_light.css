@@ -1,0 +1,30 @@
+@font-face { font-family: "Inter"; src: url("assets/fonts/Inter.woff2") format("woff2"); font-weight: 100 900; }
+@font-face { font-family: "Instrument Serif"; src: url("assets/fonts/InstrumentSerif.woff2") format("woff2"); font-style: normal; }
+@font-face { font-family: "Instrument Serif"; src: url("assets/fonts/InstrumentSerif-Italic.woff2") format("woff2"); font-style: italic; }
+@font-face { font-family: "JetBrains Mono"; src: url("assets/fonts/JetBrainsMono-500.woff2") format("woff2"); font-weight: 500; }
+:root { --bg: #F6F4F0; --text: #121116; --muted: #5B5868; --scrim: rgba(246,244,240,.72); --accent: #B5651D; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); }
+#root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--bg); font-family: "Inter", sans-serif; color: var(--text); }
+.bg { position: absolute; inset: 0; z-index: 0; background: linear-gradient(180deg, #F8F6F2 0%, #EFECE6 100%); }
+.grain { position: absolute; inset: 0; z-index: 60; opacity: .035; background: url("assets/lib/grain.png"); pointer-events: none; mix-blend-mode: multiply; }
+.vignette { position: absolute; inset: 0; z-index: 59; pointer-events: none; background: radial-gradient(ellipse at 50% 50%, transparent 64%, rgba(60,50,40,.10) 100%); }
+.win { position: absolute; overflow: hidden; opacity: 0; background: var(--bg); will-change: transform, opacity; }
+.win.framed { border: 1px solid rgba(15,14,20,.10); box-shadow: 0 50px 120px rgba(40,30,20,.20), 0 8px 24px rgba(15,14,20,.08); }
+.win-inner { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
+.plate { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform, opacity; }
+.plate .media { display: block; position: absolute; left: 0; top: 0; }
+.plate .dim { position: absolute; inset: 0; background: var(--bg); }
+.tag { position: absolute; right: 18px; bottom: 16px; font: 500 15px "JetBrains Mono", monospace; letter-spacing: .14em; color: var(--accent); background: rgba(255,255,255,.94); padding: 7px 12px; border-radius: 999px; opacity: 0; }
+.hl { position: absolute; font-family: "Inter", sans-serif; font-weight: 640; letter-spacing: -0.035em; color: var(--text); text-shadow: 0 0 24px rgba(255,255,255,.6); }
+.hl .row { display: block; }
+.wd { display: inline-block; margin-right: .24em; opacity: 0; will-change: transform, opacity, filter; }
+.wd.serif { font-family: "Instrument Serif", serif; font-style: italic; font-weight: 400; letter-spacing: -0.01em; color: var(--accent); }
+.lower { position: absolute; font-weight: 600; letter-spacing: -0.015em; line-height: 1.2; color: var(--text); text-shadow: 0 0 14px rgba(255,255,255,.9); }
+.caption { position: absolute; font-weight: 600; line-height: 1.22; color: var(--text); text-shadow: 0 0 14px rgba(255,255,255,.95); }
+.cap { position: absolute; text-align: center; font-family: "Inter", sans-serif; font-weight: 600; letter-spacing: -0.015em; line-height: 1.22; color: var(--text); text-shadow: 0 0 14px rgba(255,255,255,.95), 0 0 3px rgba(255,255,255,.9); z-index: 50; }
+.cw { opacity: .42; }
+.scrim { position: absolute; left: 0; right: 0; z-index: 25; opacity: 0; pointer-events: none; }
+.scrim.mid { top: 0; bottom: 0; background: radial-gradient(ellipse at 50% 45%, var(--scrim), transparent 70%); }
+.scrim.low { bottom: 0; height: 40%; background: linear-gradient(180deg, transparent, var(--scrim)); }
+.fade { position: absolute; inset: 0; background: var(--bg); opacity: 0; z-index: 70; }

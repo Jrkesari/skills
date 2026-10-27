@@ -8,3 +8,5 @@ __pycache__/
 *.pyc
 !/netigen-security-audit/
 !/netigen-security-audit/**
+!/video-editor/
+!/video-editor/**
