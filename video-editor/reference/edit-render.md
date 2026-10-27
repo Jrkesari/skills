@@ -35,6 +35,18 @@ cp scripts/shared/fonts/*.woff2 videos/$FILM_NAME-16x9/assets/fonts/
 - Text over a busy shot: move the text to a calmer shot or use `framed` look. Fix contrast warnings from `check` by changing `accent` (default `#EAC873` passes on dark).
 - A clip shorter than its slot holds its last frame (`tpad`); prefer moving `in`, lowering `speed` to ≥ 0.7, or giving it a shorter slot.
 - Patch scripts with exact replacements; open and write files with `encoding='utf-8', newline='\n'`; use forward slashes in generated paths.
+- Two clips of the same action back to back (a card lifted in one take, lifted again in the next) read as a stuck or repeated shot. Keep one take per action.
+- Handheld phone clips: set `"stabilize": true` on the shot (two-pass vidstab in prepare.py; `stab_smooth` frames, default 24 = 0.8 s). It removes the jitter and keeps slow reveals and pull-backs. Users notice the shake once the edit is otherwise clean.
+- Per-format overrides: any shot key can be overridden per canvas, e.g. `"land": {"focus": [0.5, 0.4]}`, or a different `src`/`kind`/`w`/`h` (a landscape photo in place of a vertical clip in 16:9). prepare.py and build.py both apply them.
+- Film-specific layers (particles, a light flash, a letterbox, a custom end card): put a module in `edit/` with `apply(film, TL, fmt, W, H)` and name it in `timeline.json` as `"fx"`; build.py calls it after the shots and texts.
+
+## Phone footage and the renderer (from real defects)
+
+- **iPhone video is HDR (HLG, BT.2020, 10-bit HEVC).** If any plate keeps those tags, HyperFrames 0.8.134 auto-promotes the whole render to HDR: the output is HEVC Main10 HLG (washed out or unplayable on WhatsApp), the render takes ~5x longer (it pre-extracts ~20 GB of 16-bit frames), and DOM text, scrims and blend-mode layers go missing from most frames although snapshots look fine. prepare.py now tone-maps HLG/PQ clips to SDR BT.709 (zscale + `tonemap=hable`, which matches the phone's look; `mobius` is brighter) and tags the plates bt709. Pass `--sdr` to `render` as a guard too, and check the master with ffprobe (h264, yuv420p, bt709) before sending.
+- Plates are encoded with a keyframe every 30 frames (`-g 30`); with sparse keyframes the renderer warns about seek failures and frozen frames.
+- `check` rejects tweens on `letterSpacing` (it snaps to whole pixels); animate scale, x or opacity instead. It also warns past ~40 elements carrying `filter: blur`, `radial-gradient` or `clip-path` (capture can go black). Use a PNG for repeated glows (particles, light leaks), not a CSS gradient on every element.
+- Overlapping opacity tweens on one element are flagged; when looping a particle, start the next cycle only after the previous fade-out ends.
+- Non-Latin text (Devanagari and others) needs its own `@font-face`: the renderer does not supply system fonts. On Windows, subset a face out of `C:/Windows/Fonts/Nirmala.ttc` with fontTools (`TTCollection(...).fonts[0]`, `Subsetter.populate(text=...)`) into `assets/fonts/`.
 
 ## Check, snapshot, render
 
@@ -42,7 +54,7 @@ cp scripts/shared/fonts/*.woff2 videos/$FILM_NAME-16x9/assets/fonts/
 cd videos/<project>
 npx -y hyperframes@0.8.134 check          # 0 errors; container_overflow infos on plates are by design
 rm -rf snapshots && npx -y hyperframes@0.8.134 snapshot --describe false --no-end --timeout 20000 --at 0.5,2.1,...   # one moment per shot and per text
-npx -y hyperframes@0.8.134 render --crf 16 --fps 30 --workers 2 --output renders/<project>-vN.mp4   # background
+npx -y hyperframes@0.8.134 render --sdr --crf 16 --fps 30 --workers 2 --output renders/<project>-vN.mp4   # background; ~5 min for 50 s at 1080p
 ```
 
 ## Mux and finish
@@ -61,6 +73,8 @@ Always mux the exact `mix.wav`: the renderer's own audio drifts about 1 dB quiet
 ## Review checklist
 
 - [ ] Every shot is the user's own media; nothing generated or stock.
+- [ ] Master is h264 / yuv420p / bt709 (not HEVC HLG), and every text and overlay is in the rendered frames, not only in snapshots.
+- [ ] No two shots show the same action; handheld shots are stabilised.
 - [ ] Cuts land on beats; nothing drifts against the music by the end.
 - [ ] No face, sign or text cut at an edge; focus is on the subject in every ratio.
 - [ ] No black frames between shots, no black edge strips, no visible plate edge during a push or pan.

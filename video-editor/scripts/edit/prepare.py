@@ -1,5 +1,5 @@
 # Turns each planned shot into a ready plate for one canvas: images rotated, sized and blur-filled when the aspect
-# differs; videos trimmed, speed-set, cropped on their focus point and padded to the slot. Originals are never changed.
+# differs; videos tone-mapped to SDR when HDR, optionally stabilised, trimmed, speed-set, cropped on their focus point and padded to the slot. Originals are never changed.
 # Usage: prepare.py <fmt> [shot ids]   (writes <project>/assets/shots/ and edit/prepared_<fmt>.json; audio/clips/ for keep_audio)
 import json, os, subprocess, sys
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
@@ -50,12 +50,33 @@ def prep_image(s, ww, wh, fit, dark, out):
     return res.size
 
 
+def is_hdr(src):
+    """iPhone clips are usually HLG (BT.2020). Left as is, HyperFrames promotes the whole render to 10-bit HDR HEVC."""
+    r = subprocess.run([ffmpeg(), "-hide_banner", "-i", src], capture_output=True, text=True, errors="replace")  # no ffprobe needed
+    return any(t in r.stderr for t in ("arib-std-b67", "smpte2084"))
+
+
+TONEMAP = ("zscale=t=linear:npl=203,format=gbrpf32le,zscale=p=bt709,tonemap=hable:desat=0,"
+           "zscale=t=bt709:m=bt709:r=tv,format=yuv420p,")
+
+
+def stab_pass(s, need, sp):
+    """Pass 1 of vidstab on the trimmed clip; returns the transform filter for pass 2 (handheld shake out, moves kept)."""
+    d = os.path.join(ROOT, "edit", "stab")
+    os.makedirs(d, exist_ok=True)
+    subprocess.run([ffmpeg(), "-y", "-loglevel", "error", "-ss", f'{s.get("in", 0):.3f}', "-t", f"{need * sp + 0.5:.3f}", "-i", s["src"],
+                    "-vf", f'vidstabdetect=shakiness=6:accuracy=15:result={s["id"]}.trf', "-f", "null", "-"], check=True, cwd=d)
+    return f'vidstabtransform=input={s["id"]}.trf:smoothing={s.get("stab_smooth", 24)}:optzoom=1:zoomspeed=0.2:interpol=bicubic,', d
+
+
 def prep_video(s, ww, wh, fit, dark, out):
     need = s["end"] - s["start"] + s.get("xf", 0)
     sp = float(s.get("speed", 1.0))
     CW, CH = even(ww * HEAD), even(wh * HEAD)
     fx, fy = s.get("focus", [0.5, 0.5])
-    chain, last = [f"[0:v]setpts=(PTS-STARTPTS)/{sp:.5f}[v0]"], "v0"
+    tm = TONEMAP if is_hdr(s["src"]) else ""
+    st, cwd = stab_pass(s, need, sp) if s.get("stabilize") else ("", None)
+    chain, last = [f"[0:v]{st}{tm}setpts=(PTS-STARTPTS)/{sp:.5f}[v0]"], "v0"
     for i, (x, y, w, h) in enumerate(s.get("blur", [])):
         chain.append(f"[{last}]split[a{i}][b{i}];[b{i}]crop=iw*{w}:ih*{h}:iw*{x}:ih*{y},gblur=sigma=20:steps=3[c{i}];"
                      f"[a{i}][c{i}]overlay=main_w*{x}:main_h*{y}[v{i + 1}]")
@@ -72,7 +93,9 @@ def prep_video(s, ww, wh, fit, dark, out):
     chain.append(f"[p]fps=30,tpad=stop_mode=clone:stop_duration={need:.3f},format=yuv420p[out]")
     subprocess.run([ffmpeg(), "-y", "-loglevel", "error", "-ss", f'{s.get("in", 0):.3f}', "-t", f"{need * sp + 0.5:.3f}", "-i", s["src"],
                     "-filter_complex", ";".join(chain), "-map", "[out]", "-t", f"{need:.3f}",
-                    "-c:v", "libx264", "-crf", "16", "-preset", "medium", "-an", "-movflags", "+faststart", out], check=True)
+                    "-c:v", "libx264", "-crf", "16", "-preset", "medium", "-g", "30", "-keyint_min", "30",  # dense keyframes seek cleanly
+                    "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709",
+                    "-an", "-movflags", "+faststart", out], check=True, cwd=cwd)
     if s.get("keep_audio") and s.get("audio"):  # format-independent; build_audio.py places it on the film clock
         os.makedirs(os.path.join(ROOT, "audio", "clips"), exist_ok=True)
         tempo = [] if abs(sp - 1) < 1e-3 else [f"atempo={min(max(sp, 0.5), 2.0)}"]
@@ -85,6 +108,8 @@ def prep_video(s, ww, wh, fit, dark, out):
 if __name__ == "__main__":
     fmt, only = sys.argv[1], set(sys.argv[2:])
     TL = json.load(open(os.path.join(ROOT, "edit", "timeline.json"), encoding="utf-8"))
+    for s in TL["shots"]:  # per-format overrides, e.g. "land": {"focus": [...], "src": ...}
+        s.update(s.get(fmt) or {})
     _, _, ww, wh = window_rect(fmt, TL.get("look", "fullbleed"))
     dark = TL.get("theme", "dark") == "dark"
     base = os.path.join(project_dir(ROOT, fmt), "assets", "shots")

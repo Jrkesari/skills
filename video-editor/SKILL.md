@@ -1,6 +1,6 @@
 ---
 name: video-editor
-description: Edit the user's own videos and photos into one finished video cut to a song they provide - beat-synced cuts, Ken Burns moves on stills, dissolves, titles and an end card, optional voiceover and captions - rendered in any aspect ratio (16:9, 9:16, 1:1, 4:5, 16:10, ...). Use when the user asks to make a montage, reel, slideshow, travel or event video, highlight video, music video or social clip from clips and images plus a music track. For Netigen product films use netigen-video instead.
+description: Edit the user's own videos and photos into one finished video cut to a song they provide - beat-synced cuts, Ken Burns moves on stills, dissolves, titles and an end card, optional voiceover and captions - rendered in any aspect ratio the user picks (16:9, 16:10, 4:3, 21:9, 9:16, 4:5, 1:1 or custom). Use when the user asks to make a montage, reel, slideshow, travel or event video, highlight video, music video or social clip from clips and images plus a music track. For Netigen product films use netigen-video instead.
 ---
 
 # Video editor (any footage + the user's song)
@@ -22,12 +22,17 @@ The working code is in [scripts/](scripts/README.md). Editing and render rules: 
 
 ## Step 0: Intake (ask before anything else)
 
-Use AskUserQuestion, and **ask only what the request leaves open**. If the user has not given the media folder or the song file, ask for the paths in plain text first (they are not multiple-choice). Round 1:
+Use AskUserQuestion, and **ask only what the request leaves open**, with one exception: **always ask the aspect-ratio questions, offering every supported ratio**, even when the request names some (pre-mark the named ones as "(Recommended)" and list them first), so the user sees all the choices before anything renders. If the user has not given the media folder or the song file, ask for the paths in plain text first (they are not multiple-choice). Round 1:
+
+| Question | Options (multi-select; "Other" takes any custom ratio, e.g. 2:3 or 3:2) |
+|---|---|
+| Wide ratios? | 16:9 (YouTube, TV, laptop) · 16:10 (laptop, presentation) · 4:3 (tablet, classic) · 21:9 (cinema, ultrawide) |
+| Tall or square ratios? | 9:16 (Reels, Shorts, Stories, WhatsApp status) · 4:5 (Instagram / Facebook feed) · 1:1 (square feed) · None |
+
+Then the rest of round 1:
 
 | Question | Options (first is the default) |
 |---|---|
-| Landscape ratios? (multi-select) | 16:9 · 16:10 · 4:3 · None |
-| Vertical or square ratios? (multi-select) | 9:16 · 1:1 · 4:5 · None |
 | How long? | Fit to the media (about 2 s a shot) · 30 s · 15 s · The whole song |
 | Pace / feel? | Medium: cut every 2 bars, soft dissolves · Slow & cinematic: long dissolves · Fast: hard cut on every beat or two |
 
@@ -51,7 +56,7 @@ Then show the plan as one table (shots in order with their source, length and mo
 
 ## Step 2: Look at the media
 
-`python -I tools/probe.py <folder or files...>` writes `edit/media_index.json` and numbered contact sheets `edit/contact-N.jpg`. **Read every contact sheet.** Note per item: the subject and where it sits (for `focus`), which clips have the best moment and when (for `in`), rotated or dark shots, and anything private. Drop broken files and say so.
+`python -I tools/probe.py <folder or files...>` writes `edit/media_index.json` and numbered contact sheets `edit/contact-N.jpg`. **Read every contact sheet**, and for clips a 6-frame strip each (one frame says little about what happens in a take). Note which clips are HDR (iPhone HLG; prepare.py tone-maps them) and which are handheld (`"stabilize": true`). Note per item: the subject and where it sits (for `focus`), which clips have the best moment and when (for `in`), rotated or dark shots, and anything private. Drop broken files and say so.
 
 ## Step 3: The song
 
@@ -76,18 +81,18 @@ python -I audio/build_audio.py --diag && (cd audio && bash norm.sh)   # song (+V
 cp audio/mix.wav videos/$FILM_NAME-<ratio>/assets/mix.wav
 ```
 
-Format keys: `land` 16:9, `port` 9:16, `1x1`, `4x5`, `16x10`, `4x3`, `21x9`. Rebuild from the first stage that changed: timeline -> prepare -> build; timeline or song -> build_audio -> norm -> copy.
+Format keys: `land` 16:9, `port` 9:16, `1x1`, `4x5`, `16x10`, `4x3`, `21x9`, or any custom `WxH` ratio such as `2x3` or `3x2` (short side 1080 px; wide ones follow the 16:9 layout, tall and square ones the 9:16 layout). Rebuild from the first stage that changed: timeline -> prepare -> build; timeline or song -> build_audio -> norm -> copy.
 
 ## Step 6: Check, preview, render
 
 - In each project: `npx -y hyperframes@0.8.134 check` (0 errors needed; `container_overflow` infos on plates are expected, since plates are larger than the window by design). Fix contrast warnings by changing `accent`.
 - `snapshot --describe false --no-end --timeout 20000 --at <one moment per shot + each text>`; read every contact sheet. Look for faces or text cut at edges, wrong focus, dark shots, text over busy areas.
 - Send an early preview: render the first ratio, mux, make a crf 21 preview under 30 MB and send it with SendUserFile.
-- Render: `render --crf 16 --fps 30 --workers 2 --output renders/<name>-vN.mp4` in the background. Then mux the exact `mix.wav` (commands in [reference/edit-render.md](reference/edit-render.md)); portrait renders need `fillborders=right=8:mode=smear`.
+- Render: `render --sdr --crf 16 --fps 30 --workers 2 --output renders/<name>-vN.mp4` in the background, then confirm the master is h264/bt709 with ffprobe (phone footage is HDR; see [reference/edit-render.md](reference/edit-render.md)). Then mux the exact `mix.wav` (commands in [reference/edit-render.md](reference/edit-render.md)); portrait renders need `fillborders=right=8:mode=smear`.
 
 ## Step 7: Review once, then deliver
 
 Extract frames at 2 fps from the muxed master and check them against the checklist in [reference/edit-render.md](reference/edit-render.md). Fix only real defects, re-render once, deliver:
 - `deliver/<Name>-<ratio>.mp4` masters, `deliver/preview/*-preview.mp4` (sent), `deliver/<name>.srt` if there is text or VO (`python -I tools/srt.py deliver/<name>.srt`), and an optional post caption if the user wants one.
 - Hand-off notes: what was left out and why, any shot reused or held on its last frame, the song window used, the copyright line, and file paths.
-- **Last question, always:** "Do you want this in another aspect ratio (16:9, 9:16, 1:1, 4:5, 16:10, other)?" A new ratio reuses timeline.json and mix.wav: prepare, build, check, render, mux.
+- **Last question, always:** ask with AskUserQuestion (multi-select, not as plain text) which other aspect ratios they want, offering every supported ratio not yet delivered: 16:9 · 16:10 · 4:3 · 21:9 · 9:16 · 4:5 · 1:1 (split into a wide and a tall/square question when more than four remain), plus "None". A new ratio reuses timeline.json and mix.wav: prepare, build, check, render, mux.

@@ -1,8 +1,20 @@
 # Canvas sizes, layout family, window and text zones per aspect ratio. Every script takes these keys.
 import os
 
-FORMATS = {"land": (1920, 1080), "port": (1080, 1920), "16x10": (1920, 1200), "4x3": (1440, 1080),
-           "1x1": (1080, 1080), "4x5": (1080, 1350), "21x9": (2520, 1080)}
+class _Formats(dict):
+    """Any other "WxH" ratio key (e.g. "2x3", "3x2", "9x21") gets a canvas with its short side at 1080 px."""
+
+    def __missing__(self, fmt):
+        try:
+            a, b = (int(v) for v in fmt.lower().replace(":", "x").split("x"))
+        except ValueError:
+            raise KeyError(f"unknown format {fmt!r}: use land, port, 16x10, 4x3, 21x9, 1x1, 4x5 or any WxH ratio")
+        w, h = (round(1080 * a / b / 2) * 2, 1080) if a >= b else (1080, round(1080 * b / a / 2) * 2)
+        return w, h
+
+
+FORMATS = _Formats({"land": (1920, 1080), "port": (1080, 1920), "16x10": (1920, 1200), "4x3": (1440, 1080),
+                    "1x1": (1080, 1080), "4x5": (1080, 1350), "21x9": (2520, 1080)})
 RATIO = {"land": "16x9", "port": "9x16"}
 
 

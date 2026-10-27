@@ -51,6 +51,8 @@ def scrim(kind, t0, t1):
 
 
 shots = TL["shots"]
+for s in shots:  # per-format overrides, as in prepare.py
+    s.update(s.get(fmt) or {})
 for i, s in enumerate(shots):
     p = PREP[s["id"]]
     xf = s.get("xf", 0.0)
@@ -79,6 +81,10 @@ for tx in TL.get("texts", []):
         scrim("low", tx["start"], tx["end"])
         f.text(html.escape(tx["text"]).replace("\n", "<br>"), x, y, w, tx["start"], tx["end"], st,
                align="left" if st == "lower" else "center", size=tx.get("size", size))
+
+if TL.get("fx"):  # an optional film-specific module in edit/ with apply(film, TL, fmt, W, H): extra layers, custom cards
+    import importlib
+    importlib.import_module(TL["fx"]).apply(f, TL, fmt, W, H)
 
 cap_path = os.path.join(ROOT, "edit", "captions.json")
 if TL.get("vo") and os.path.exists(cap_path):
