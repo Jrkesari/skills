@@ -1,4 +1,4 @@
-# skills (private)
+# skills
 
 My personal Claude Code skills. This repo is cloned as `~/.claude/skills`, so every skill folder here is loaded by Claude Code in every session.
 
@@ -6,7 +6,6 @@ My personal Claude Code skills. This repo is cloned as `~/.claude/skills`, so ev
 |---|---|
 | [netigen-video](netigen-video/SKILL.md) | Makes Netigen product videos (one feature, one layer, or the whole platform) from real UI, in any aspect ratio, with AI voiceover, music, captions and a LinkedIn caption |
 | [video-editor](video-editor/SKILL.md) | Edits your own clips and photos into one video cut to a song you provide: beat-synced cuts, Ken Burns moves, titles, optional voiceover and captions, any aspect ratio |
-| [netigen-security-audit](netigen-security-audit/SKILL.md) | White-box security audit of netigen-draft, netigen-mcp and netigen-backend-core — static scanners plus a repo-specific threat-surface review (auth, tokens, LLM-SQL, guards, connectors, approvals, SSRF), reported ranked by user impact |
 
 ## Set up on a new machine
 
