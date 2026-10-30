@@ -2,10 +2,8 @@
 /*
 !/.gitignore
 !/README.md
-!/netigen-video/
-!/netigen-video/**
-__pycache__/
-*.pyc
+!/LICENSE
+!/THIRD_PARTY_NOTICES.md
 !/video-editor/
 !/video-editor/**
 __pycache__/
