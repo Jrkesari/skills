@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: explains-home-screen-ads
+expected_outcome: |
+  The response says Google TV builds the sponsored banners into its home screen with no setting to turn them off; explains that Apps-only mode still shows featured content and disables search and voice; offers turning Autoplay video off; mentions replacing the home screen only with its trade-offs; and changes nothing on the TV without the user agreeing.

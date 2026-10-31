@@ -4,7 +4,11 @@
 !/README.md
 !/LICENSE
 !/THIRD_PARTY_NOTICES.md
+!/.claude-plugin/
+!/.claude-plugin/**
 !/video-editor/
 !/video-editor/**
+!/fix-android-tv-lag/
+!/fix-android-tv-lag/**
 __pycache__/
 *.pyc

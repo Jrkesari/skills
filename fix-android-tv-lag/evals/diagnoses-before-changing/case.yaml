@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: diagnoses-before-changing
+expected_outcome: |
+  The run looks for the TV on the network and, if it cannot connect, gives the exact remote-control steps to turn on developer options and USB debugging. Once connected it runs the read-only diagnosis before any change, explains each restart's cause from the boot history (asking about power cuts for cold boots) and the lag from memory figures, and proposes a plan instead of changing anything unasked.

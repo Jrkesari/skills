@@ -1,0 +1,32 @@
+{
+  "name": "jrkesari-skills",
+  "description": "Claude Code skills by Jrkesari: fix a slow or restarting Android TV, and edit your own clips into a video cut to a song",
+  "owner": {
+    "name": "Jrkesari",
+    "url": "https://github.com/Jrkesari"
+  },
+  "plugins": [
+    {
+      "name": "fix-android-tv-lag",
+      "source": "./",
+      "skills": ["./fix-android-tv-lag"],
+      "description": "Finds out why an Android TV or Google TV is slow or keeps restarting and fixes what can be fixed over Wi-Fi ADB: removes apps you never open, switches off features you don't use, optimises apps, then restarts and verifies, with every change logged and undoable",
+      "license": "MIT",
+      "homepage": "https://github.com/Jrkesari/skills/tree/main/fix-android-tv-lag",
+      "repository": "https://github.com/Jrkesari/skills",
+      "keywords": ["android-tv", "google-tv", "adb", "performance", "debloat", "smart-tv"],
+      "category": "utilities"
+    },
+    {
+      "name": "video-editor",
+      "source": "./",
+      "skills": ["./video-editor"],
+      "description": "Edits your own clips and photos into one finished video cut to a song you provide: beat-synced cuts, Ken Burns moves, dissolves, titles, optional voiceover and captions, in any aspect ratio",
+      "license": "MIT",
+      "homepage": "https://github.com/Jrkesari/skills/tree/main/video-editor",
+      "repository": "https://github.com/Jrkesari/skills",
+      "keywords": ["video", "editing", "montage", "reel", "beat-sync"],
+      "category": "media"
+    }
+  ]
+}
