@@ -17,6 +17,13 @@ As a Claude Code plugin marketplace, installing only the skills you want:
 /plugin install video-editor@jrkesari-skills
 ```
 
+In OpenAI Codex, which reads the same marketplace file:
+
+```bash
+codex plugin marketplace add Jrkesari/skills
+codex plugin add fix-android-tv-lag@jrkesari-skills
+```
+
 Or clone the repo as your user-level skills folder, so every skill loads in every Claude Code session:
 
 ```bash

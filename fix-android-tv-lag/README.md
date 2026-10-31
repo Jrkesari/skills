@@ -25,7 +25,7 @@ What it can't do: stop crashes caused by firmware bugs or failing hardware (it w
 
 - A computer on the same network as the TV, with Python 3.8+.
 - Android SDK Platform-Tools (`adb`). The skill looks for it on `PATH` and in the usual SDK folders, and asks before installing anything.
-- [Claude Code](https://claude.com/claude-code), or another agent that reads Agent Skills.
+- [Claude Code](https://claude.com/claude-code) or OpenAI Codex, or another agent that reads Agent Skills.
 
 ## Install
 
@@ -34,6 +34,13 @@ As a Claude Code plugin:
 ```
 /plugin marketplace add Jrkesari/skills
 /plugin install fix-android-tv-lag@jrkesari-skills
+```
+
+In OpenAI Codex:
+
+```bash
+codex plugin marketplace add Jrkesari/skills
+codex plugin add fix-android-tv-lag@jrkesari-skills
 ```
 
 Or the whole skills repo, as your user skills folder:
